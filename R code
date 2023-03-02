@@ -51,13 +51,11 @@ w_playoff <- df %>% filter(Team %in% west, Rank <= 6)
 
 # eastern conference
 e_win_perc <- e_playoff %>% select(W, L) %>% mutate(Total = W+L) %>% mutate(win_percentage = W/Total)
-boxplot(e_win_perc$win_percentage) # outlier but it represent natural variations
 (e_avg_win_perc <- mean(e_win_perc$win_percentage))
 (e_reg_season_win <- e_avg_win_perc * 82) # 82 defines the number of regular season games
 
 # western conference
 w_win_perc <- w_playoff %>% select(W, L) %>% mutate(Total = W+L) %>% mutate(win_percentage = W/Total)
-boxplot(w_win_perc$win_percentage)# outlier but it represent natural variations
 (w_avg_win_perc <- mean(w_win_perc$win_percentage))
 (w_reg_season_win <- w_avg_win_perc * 82) # 82 defines the number of regular season games
 
@@ -66,18 +64,17 @@ boxplot(w_win_perc$win_percentage)# outlier but it represent natural variations
 
 #remove all non-numeric
 str(df)
-df1 <- df %>% select(-c("Season" , "Team" , "Playoff" , "Arena" , "Attend." , "Attend..G" , 'G','GB' , 'GB', 'PW' ,'PL' , 'Rank')) 
+df1 <- df %>% select(-c("Season" , "Team" , "Playoff" , "Arena" , "Attend." , "Attend..G" , 'G','GB' , 'GB', 'PW' ,'PL' , 'Rank')) # removing non-numeric columns
 str(df1)
 
-(cor_w <- cor(df1[,-1],df1$W))
+(cor_w <- cor(df1[,-1],df1$W)) # finding variables correlated with wins
 
-# NRtg(net rating) for a team to achieve the average number of wins a playoff team secures in the regular season
+# How NRtg(net rating) affects Wins regression model
 (net_rating <- summary(lm(W ~ NRtg, data=df)))
 
-e_NRtg <- (51 - 39.83787)/2.40815
-W_NRtg <- (55 - 39.83787)/2.40815
+(W_NRtg <- (55 - 39.83787)/2.40815) # NRtg needed to achieve 55 wins in the Western COnference
 
-(lin_reg <- ggplot(data=df, aes(NRtg, W, colour = Playoff)) + 
+(ggplot(data=df, aes(NRtg, W, colour = Playoff)) + 
     geom_smooth(method = "lm" , se = FALSE, colour = 'Black') +
     geom_point() +
     scale_color_manual(name = "Made the Playoffs", 
@@ -89,8 +86,8 @@ W_NRtg <- (55 - 39.83787)/2.40815
 
 # 3. How can we predict the NRtg (net rating) for a team?
 
-(cor_ortg <- cor(df1[,-7],df1$ORtg)) # ortg
-(cor_drtg <- cor(df1[,-8],df1$DRtg))# drtg
+(cor_ortg <- cor(df1[,-7],df1$ORtg)) # ortg correlations
+(cor_drtg <- cor(df1[,-8],df1$DRtg))# drtg correlations
 
 # ORtg regression model
 (lm_ortg1 <- summary(lm(ORtg ~ TS.+ eFG., data=df1)))
@@ -123,5 +120,4 @@ W_NRtg <- (55 - 39.83787)/2.40815
 
 # 4. Will the Los Angeles Lakers achieve enough wins to guarantee them a spot in the playoffs?
 (lakers_nrtg_2023 <- lakers_ortg_2023 - lakers_drtg_2023)
-
 (wins_prediction <- 39.83787 + (2.40815 * lakers_nrtg_2023))
