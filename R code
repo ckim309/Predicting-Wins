@@ -1,0 +1,127 @@
+# packages
+library(tidyverse)
+library(ggpubr)
+
+# load csv
+adv_stats <- read.csv("C:/Users/Chae Kim/Documents/Projects/Playoffs/AdvStats.csv")
+standings <- read.csv("C:/Users/Chae Kim/Documents/Projects/Playoffs/Standings.csv")
+standings_merged <- merge(adv_stats, standings, by = c('Season', 'Team' ,'Playoff' , 'W', 'L'))
+
+avg_stats <- read.csv("C:/Users/Chae Kim/Documents/Projects/Playoffs/Stats.csv")
+df <- merge(standings_merged, avg_stats, by = c('Season', 'Team' ,'Playoff'))
+
+
+# splitting Teams by conference
+east <- c('Boston Celtics' , 
+          'Brooklyn Nets' , 
+          'New York Knicks' , 
+          'Philadelphia 76ers' , 
+          'Toronto Raptors' ,	
+          'Chicago Bulls' ,
+          'Cleveland Cavaliers' , 
+          'Detroit Pistons' , 
+          'Indiana Pacers' , 
+          'Milwaukee Bucks' , 
+          'Atlanta Hawks' , 
+          'Charlotte Bobcats' , 'Charlotte Hornets' , 
+          'Miami Heat' , 
+          'Orlando Magic' , 
+          'Washington Wizards')
+
+west <- c('Denver Nuggets' ,
+          'Minnesota Timberwolves' ,
+          'Oklahoma City Thunder' ,
+          'Portland Trail Blazers' ,
+          'Utah Jazz' ,
+          'Golden State Warriors' ,
+          'Los Angeles Clippers' ,
+          'Los Angeles Lakers' ,
+          'Phoenix Suns' ,
+          'Sacramento Kings' ,
+          'Dallas Mavericks' ,
+          'Houston Rockets' ,
+          'Memphis Grizzlies' ,
+          'New Orleans Hornets' ,
+          'San Antonio Spurs')
+
+# 1. How many wins, on average, does a team that is guaranteed a spot in the playoffs achieve during the regular season?
+
+e_playoff <- df %>% filter(Team %in% east, Rank <= 6) # dataframe with only teams that are guaranteed a spot in the playoffs (TOP 6)
+w_playoff <- df %>% filter(Team %in% west, Rank <= 6)
+
+# eastern conference
+e_win_perc <- e_playoff %>% select(W, L) %>% mutate(Total = W+L) %>% mutate(win_percentage = W/Total)
+boxplot(e_win_perc$win_percentage) # outlier but it represent natural variations
+(e_avg_win_perc <- mean(e_win_perc$win_percentage))
+(e_reg_season_win <- e_avg_win_perc * 82) # 82 defines the number of regular season games
+
+# western conference
+w_win_perc <- w_playoff %>% select(W, L) %>% mutate(Total = W+L) %>% mutate(win_percentage = W/Total)
+boxplot(w_win_perc$win_percentage)# outlier but it represent natural variations
+(w_avg_win_perc <- mean(w_win_perc$win_percentage))
+(w_reg_season_win <- w_avg_win_perc * 82) # 82 defines the number of regular season games
+
+
+# 2. Which variable correlates the most to wins during the regular season?
+
+#remove all non-numeric
+str(df)
+df1 <- df %>% select(-c("Season" , "Team" , "Playoff" , "Arena" , "Attend." , "Attend..G" , 'G','GB' , 'GB', 'PW' ,'PL' , 'Rank')) 
+str(df1)
+
+(cor_w <- cor(df1[,-1],df1$W))
+
+# NRtg(net rating) for a team to achieve the average number of wins a playoff team secures in the regular season
+(net_rating <- summary(lm(W ~ NRtg, data=df)))
+
+e_NRtg <- (51 - 39.83787)/2.40815
+W_NRtg <- (55 - 39.83787)/2.40815
+
+(lin_reg <- ggplot(data=df, aes(NRtg, W, colour = Playoff)) + 
+    geom_smooth(method = "lm" , se = FALSE, colour = 'Black') +
+    geom_point() +
+    scale_color_manual(name = "Made the Playoffs", 
+                       values = c("#F74F2B", "#31E9FB")) +
+    labs(x='NRtg (Net Rating)', y='Wins', title='Relationship Between Wins and NRtg') +
+    theme_minimal() +
+    theme(legend.position = "top", plot.title = element_text(hjust=0.5, size=13))
+)
+
+# 3. How can we predict the NRtg (net rating) for a team?
+
+(cor_ortg <- cor(df1[,-7],df1$ORtg)) # ortg
+(cor_drtg <- cor(df1[,-8],df1$DRtg))# drtg
+
+# ORtg regression model
+(lm_ortg1 <- summary(lm(ORtg ~ TS.+ eFG., data=df1)))
+(lm_ortg2 <- summary(lm(ORtg ~ TS.+ PS.G, data=df1)))
+
+(ggplot(data=df1, aes(TS.+ PS.G, ORtg)) + 
+    geom_smooth(method = "lm" , se = FALSE, colour = 'Red') +
+    geom_point() +
+    labs(x='True Shooting % + Points Scored per Game', y='Offensive Rating', title='Relationship Between ORtg and TS% + PS/G') +
+    theme_minimal() +
+    theme(legend.position="none", plot.title = element_text(hjust=0.5, size=13))
+)
+
+(lakers_ortg_2023 <- 19.41223 + (117.25455 * .557) + (0.23086 * 116.9)) # Lakers's ORtg
+
+
+# DRtg regression model
+(lm_drtg <- summary(lm(DRtg ~ O_eFG.+ PA.G, data=df1)))
+
+
+(ggplot(data=df1, aes(O_eFG.+ PA.G, DRtg)) + 
+    geom_smooth(method = "lm" , se = FALSE, colour = 'Red') +
+    geom_point() +
+    labs(x='Opponent True Shooting % + Opponents Points Allowed per Game', y='Defensive Rating', title ='Relationship Between DRtg and O_eFG% + PA/G') +
+    theme_minimal() +
+    theme(legend.position="none", plot.title = element_text(hjust=0.5, size=13))
+)
+
+(lakers_drtg_2023 <- 28.47503 + (112.27513 * .536) + (0.21032 * 117.9))  # Lakers's DRtg
+
+# 4. Will the Los Angeles Lakers achieve enough wins to guarantee them a spot in the playoffs?
+(lakers_nrtg_2023 <- lakers_ortg_2023 - lakers_drtg_2023)
+
+(wins_prediction <- 39.83787 + (2.40815 * lakers_nrtg_2023))
