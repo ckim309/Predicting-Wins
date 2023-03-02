@@ -1,1 +1,4 @@
-# Statistical-Modeling-to-Predict-Whether-a-NBA-team-will-make-the-playoffs
+# About the Project
+The NBA can be defined as having 2 distinguished periods throughout a season. The first, is the regular season which consists of 30 teams that play 82 games with the goal of reaching the playoffs, and the second, a postseason tournament to determine the league champion. Prior to the 2020-2021 season, teams that finished within the top 8 seeds in their respective conference, the East and the West, played in the playoffs. However, with the introduction of the play-in tournament, the top 6 teams from each conference are now guaranteed a spot in the playoffs while teams that finished the season between 7th and 10th place competed for the final 2 spots. This means that a team with a worse record may go to the playoffs. Therefore, this analysis will look at the statistics of an NBA team to determine whether a team will achieve enough wins to finish the season within the top 6 places from each conference, guaranteeing the team a spot in the playoffs. 
+
+This analysis will look specifically at the Los Angeles Lakers.
