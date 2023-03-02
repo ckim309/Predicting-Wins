@@ -44,7 +44,7 @@ west <- c('Denver Nuggets' ,
           'New Orleans Hornets' ,
           'San Antonio Spurs')
 
-# 1. How many wins, on average, does a team that is guaranteed a spot in the playoffs achieve during the regular season?
+# 1. How many wins does the Los Angeles Lakers need in the regular season to be guaranteed a spot in the Playoffs?
 
 e_playoff <- df %>% filter(Team %in% east, Rank <= 6) # dataframe with only teams that are guaranteed a spot in the playoffs (TOP 6)
 w_playoff <- df %>% filter(Team %in% west, Rank <= 6)
@@ -84,7 +84,7 @@ str(df1)
     theme(legend.position = "top", plot.title = element_text(hjust=0.5, size=13))
 )
 
-# 3. How can we predict the NRtg (net rating) for a team?
+# 3. How to calculate the NRtg (net rating) for a team?
 
 (cor_ortg <- cor(df1[,-7],df1$ORtg)) # ortg correlations
 (cor_drtg <- cor(df1[,-8],df1$DRtg))# drtg correlations
