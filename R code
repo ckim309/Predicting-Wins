@@ -1,6 +1,6 @@
 # packages
 library(tidyverse)
-library(ggpubr)
+library(ggplot2)
 
 # load csv
 adv_stats <- read.csv("C:/Users/Chae Kim/Documents/Projects/Playoffs/AdvStats.csv")
@@ -46,17 +46,17 @@ west <- c('Denver Nuggets' ,
 
 # 1. How many wins does the Los Angeles Lakers need in the regular season to be guaranteed a spot in the Playoffs?
 
-e_playoff <- df %>% filter(Team %in% east, Rank <= 6) # dataframe with only teams that are guaranteed a spot in the playoffs (TOP 6)
-w_playoff <- df %>% filter(Team %in% west, Rank <= 6)
+e_playoff <- df %>% filter(Team %in% east, Rank == 6) # dataframe with only teams that are guaranteed a spot in the playoffs (TOP 6)
+w_playoff <- df %>% filter(Team %in% west, Rank == 6)
 
 # eastern conference
-e_win_perc <- e_playoff %>% select(W, L) %>% mutate(Total = W+L) %>% mutate(win_percentage = W/Total)
-(e_avg_win_perc <- mean(e_win_perc$win_percentage))
+e_win_perc <- e_playoff %>% select(W, L) %>% mutate(Total = W+L) %>% mutate(win_percentage = W/Total) # calculating win percentage for the Eastern Conference
+(e_avg_win_perc <- mean(e_win_perc$win_percentage)) # average win percentage
 (e_reg_season_win <- e_avg_win_perc * 82) # 82 defines the number of regular season games
 
 # western conference
-w_win_perc <- w_playoff %>% select(W, L) %>% mutate(Total = W+L) %>% mutate(win_percentage = W/Total)
-(w_avg_win_perc <- mean(w_win_perc$win_percentage))
+(w_win_perc <- w_playoff %>% select(W, L) %>% mutate(Total = W+L) %>% mutate(win_percentage = W/Total)) # calculating win percentage for the Western Conference
+(w_avg_win_perc <- mean(w_win_perc$win_percentage))  # average win percentage
 (w_reg_season_win <- w_avg_win_perc * 82) # 82 defines the number of regular season games
 
 
@@ -74,6 +74,7 @@ str(df1)
 
 (W_NRtg <- (55 - 39.83787)/2.40815) # NRtg needed to achieve 55 wins in the Western COnference
 
+# nrtg and wins regression model
 (ggplot(data=df, aes(NRtg, W, colour = Playoff)) + 
     geom_smooth(method = "lm" , se = FALSE, colour = 'Black') +
     geom_point() +
