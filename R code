@@ -44,7 +44,8 @@ west <- c('Denver Nuggets' ,
           'New Orleans Hornets' ,
           'San Antonio Spurs')
 
-# 1. How many wins does the Los Angeles Lakers need in the regular season to be guaranteed a spot in the Playoffs?
+
+# 1. How many games does the Los Angeles Lakers need to win to advance to the Playoffs without going through the Play-in tournament?
 
 e_playoff <- df %>% filter(Team %in% east, Rank == 6) # dataframe with only teams that are guaranteed a spot in the playoffs (TOP 6)
 w_playoff <- df %>% filter(Team %in% west, Rank == 6)
@@ -60,7 +61,7 @@ e_win_perc <- e_playoff %>% select(W, L) %>% mutate(Total = W+L) %>% mutate(win_
 (w_reg_season_win <- w_avg_win_perc * 82) # 82 defines the number of regular season games
 
 
-# 2. Which variable correlates the most to wins during the regular season?
+# 2. What does it take to win 49 games in the regular season to directly advance to the Playoffs?
 
 #remove all non-numeric
 str(df)
@@ -85,40 +86,68 @@ str(df1)
     theme(legend.position = "top", plot.title = element_text(hjust=0.5, size=13))
 )
 
-# 3. How to calculate the NRtg (net rating) for a team?
 
-(cor_ortg <- cor(df1[,-7],df1$ORtg)) # ortg correlations
-(cor_drtg <- cor(df1[,-8],df1$DRtg))# drtg correlations
-
-# ORtg regression model
-(lm_ortg1 <- summary(lm(ORtg ~ TS.+ eFG., data=df1)))
-(lm_ortg2 <- summary(lm(ORtg ~ TS.+ PS.G, data=df1)))
-
-(ggplot(data=df1, aes(TS.+ PS.G, ORtg)) + 
-    geom_smooth(method = "lm" , se = FALSE, colour = 'Red') +
-    geom_point() +
-    labs(x='True Shooting % + Points Scored per Game', y='Offensive Rating', title='Relationship Between ORtg and TS% + PS/G') +
-    theme_minimal() +
-    theme(legend.position="none", plot.title = element_text(hjust=0.5, size=13))
-)
-
-(lakers_ortg_2023 <- 19.41223 + (117.25455 * .557) + (0.23086 * 116.9)) # Lakers's ORtg
-
-
-# DRtg regression model
-(lm_drtg <- summary(lm(DRtg ~ O_eFG.+ PA.G, data=df1)))
-
-
-(ggplot(data=df1, aes(O_eFG.+ PA.G, DRtg)) + 
-    geom_smooth(method = "lm" , se = FALSE, colour = 'Red') +
-    geom_point() +
-    labs(x='Opponent True Shooting % + Opponents Points Allowed per Game', y='Defensive Rating', title ='Relationship Between DRtg and O_eFG% + PA/G') +
-    theme_minimal() +
-    theme(legend.position="none", plot.title = element_text(hjust=0.5, size=13))
-)
-
-(lakers_drtg_2023 <- 28.47503 + (112.27513 * .536) + (0.21032 * 117.9))  # Lakers's DRtg
-
-# 4. Will the Los Angeles Lakers achieve enough wins to guarantee them a spot in the playoffs?
+# 3. Will the current roster of the Los Angeles Lakers win 49 games by the end of the season to directly advance to the Playoffs?
 (lakers_nrtg_2023 <- lakers_ortg_2023 - lakers_drtg_2023)
 (wins_prediction <- 39.83787 + (2.40815 * lakers_nrtg_2023))
+
+
+# 4. What can the Los Angeles Lakers do to improve their net rating, winning enough games to directly advance to the Playoffs?
+
+# offensive rating - lakers vs league
+(ortg_rnk <- adv_stats %>% 
+      filter(Season == 2022) %>% 
+      select(Team, ORtg) %>% 
+      mutate(rank = rank(-ORtg)))
+# ORtg Bar Graph
+ortg_graph <- ggplot(ortg_rnk, aes(x = reorder(Team, - ORtg), 
+                     y = ORtg, 
+                     fill = factor(ifelse(Team == 'Los Angeles Lakers', "color", 'none')))) +
+              geom_bar(stat = "identity") +
+              scale_fill_manual(name = ' team' , values = c('#FDB927', 'gray')) +
+              labs(y = 'ORtg', title = 'League ORtg Ranking')
+ortg_graph + coord_cartesian(ylim = c(110, 120))  +
+  geom_hline(yintercept = mean(ortg_rnk$ORtg, na.rm=TRUE)) + 
+  annotate("text", x=25, y=115.5, size = 3,  label="League Average") +
+  theme(legend.position="none",
+        axis.title.x=element_blank(),
+        axis.text=element_text(size=8),
+        panel.background = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 90, vjust = 1, hjust=0.1))
+
+#defensive rating
+(drtg_rnk <- adv_stats %>%  
+    filter(Season == 2022) %>% 
+    select(Team, DRtg) %>% 
+    mutate(rank = rank(DRtg)))
+# defensive rating bar graph - lakers vs league
+drtg_graph <- ggplot(drtg_rnk, aes(x = reorder(Team, DRtg), 
+                          y = DRtg, 
+                          fill = factor(ifelse(Team == 'Los Angeles Lakers', "color", 'none')))) +
+                    geom_bar(stat = "identity") +
+                    scale_fill_manual(name = ' team' , values = c('#FDB927', 'gray')) +
+                    labs(y = 'DRtg', title = 'League DRtg Ranking')
+drtg_graph + coord_cartesian(ylim = c(110, 120))  +
+  geom_hline(yintercept = mean(drtg_rnk$DRtg, na.rm=TRUE)) +
+  annotate("text", x=5, y=115.5, size = 3,  label="League Average") +
+  theme(legend.position="none",
+        axis.title.x=element_blank(),
+        axis.text=element_text(size=8),
+        panel.background = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 90, vjust = 1, hjust=0.1))
+
+
+# comparing lakers offensive statistcs to rest of league
+(current_season <- avg_stats %>% filter(Season == 2022) %>% select(Team, X2P, X3P, FT))
+(two_points_rnk <- current_season %>% select(Team, X2P) %>% mutate(rank = rank(-X2P)) %>% arrange(-X2P))
+(three_points_rnk <- current_season %>% select(Team, X3P) %>% mutate(rank = rank(-X3P)) %>% arrange(-X3P))
+(free_throw_rnk <- current_season %>% select(Team, FT ) %>% mutate(rank = rank(-FT)) %>% arrange(-FT))
+
+(current_season_perc <- avg_stats %>% filter(Season == 2022) %>% select(Team, X2P., X3P., FT.))
+(two_points_perc_rnk <- current_season_perc %>% select(Team, X2P.) %>% mutate(rank = rank(-X2P.)) %>% arrange(-X2P.))
+(three_points_perc_rnk <- current_season_perc %>% select(Team, X3P.) %>% mutate(rank = rank(-X3P.)) %>% arrange(-X3P.))
+(free_throw_perc_rnk <- current_season_perc %>% select(Team, FT.) %>% mutate(rank = rank(-FT.)) %>% arrange(-FT.))
+
+
