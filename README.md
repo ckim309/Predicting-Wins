@@ -10,8 +10,8 @@ The purpose of this project is to create a statistical model that can be used to
 The Los Angeles Lakers will not win enough games by the end of the 2022 – 2023 regular season to directly advance to the Playoffs. The team is predicted to win 44 games, 5 games short of the minimum number of games a team in the Western Conference wins to directly advance to the Playoffs. This is due to their low team net rating. Upon further investigating their team net rating, it was discovered that their offensive rating is lower than the league’s average due to their inefficient shooting percentage across 2 pointers, 3 pointers, and free throws. Therefore, the Los Angeles Lakers should look to adjust their offensive game plan to produce more points per possession which will increase their offensive rating, resulting in their overall net rating increasing and winning more games.
 
 
-Wins = 39.83787 + 2.40815(NRtg)
 ![alt text](https://github.com/ckim309/Predicting-Wins/blob/main/Regression%20Model.png?raw=true) 
+Wins = 39.83787 + 2.40815(NRtg)
 
 ## Key Questions
 1. How many wins does the Los Angeles Lakers need in the regular season to be guaranteed a spot in the Playoffs?
