@@ -14,7 +14,6 @@ Wins = 39.83787 + 2.40815(NRtg)
 ![alt text](https://github.com/ckim309/Predicting-Wins/blob/main/Regression%20Model.png?raw=true) 
 
 ## Key Questions
-Key Questions
 1. How many wins does the Los Angeles Lakers need in the regular season to be guaranteed a spot in the Playoffs?
 2. What does it take to win enough games in the regular season to be guaranteed a spot in the Playoffs?
 3. Will the current roster of the Los Angeles Lakers achieve enough wins to guarantee them a spot in the Playoffs?
